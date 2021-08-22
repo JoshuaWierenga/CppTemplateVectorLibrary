@@ -2,13 +2,14 @@
 <#@ output extension="" #>
 //TODO Merge string info arrays into a single structure
 //TODO Automate generation of typeVectorConstructorArguments
-<#	var typeSizes = new int[] {32}; 
-	var vectorSizes = new int[] {128, 256};
+//TODO add _mm_empty for mmx operation call
+<#	var typeSizes = new int[] {8}; 
+	var vectorSizes = new int[] {64};
 
-	var typeVectorSetArguments = new string[,] {{"values[0], values[1], values[2], values[3]"}, {"values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7]"}};
+	var typeVectorSetArguments = new string[,] {{"values[0], values[1], values[2], values[3], values[4], values[5], values[6], values[7]"}};
 
-	var vectorSimdPrefixes = new string[] {"mm", "mm256"};
-	var typeSimdSuffixes = new string[] {"32"}; #>
+	var vectorSimdPrefixes = new string[] {"mm"};
+	var typeSimdSuffixes = new string[] {"pi8"}; #>
 #include <sstream>
 #include <string>
 #include "Vector.h"
@@ -16,7 +17,22 @@
 struct VectorHelpers
 {
 	//Vector ToString Functions
-	//TODO Check if these can be merged, doubt it though given use of vector_{128, 256}_, only works if GetInternal{128, 256} can be merged as well
+	//TODO Check if these can be merged, doubt it though given use of vector_{64, 128, 256}_, only works if GetInternal{64, 128, 256} can be merged as well
+	template <typename T>
+	static std::string ToString64i(const Vector<T, 64> vector)
+	{
+		std::stringstream sstr;
+		T values[8 / sizeof(T)];
+		std::memcpy(values, &vector.vector_64_, sizeof(values));
+
+		for (T v : values)
+		{
+			sstr << static_cast<int>(v) << " ";
+		}
+
+		return sstr.str();
+	}
+	
 	template <typename T>
 	static std::string ToString128i(const Vector<T, 128> vector)
 	{
@@ -93,12 +109,12 @@ struct VectorHelpers
 #pragma region <#= typeVectorName #>
 // Constructors
 template <>
-<#= typeVectorName #>::Vector(const <#= typeName #> value) : <#= vectorVariableName #>(_<#= vectorSimdPrefix #>_set1_epi<#= typeSimdSuffix #>(value))
+<#= typeVectorName #>::Vector(const <#= typeName #> value) : <#= vectorVariableName #>(_<#= vectorSimdPrefix #>_set1_<#= typeSimdSuffix #>(value))
 {
 }
 
 template <>
-<#= typeVectorName #>::Vector(const std::array<<#= typeName #>, <#= vectorSize / typeSize #>> values) : <#= vectorVariableName #>(_<#= vectorSimdPrefix #>_setr_epi<#= typeSimdSuffix #>(<#= typeVectorSetArgument #>))
+<#= typeVectorName #>::Vector(const std::array<<#= typeName #>, <#= vectorSize / typeSize #>> values) : <#= vectorVariableName #>(_<#= vectorSimdPrefix #>_setr_<#= typeSimdSuffix #>(<#= typeVectorSetArgument #>))
 {
 }
 
@@ -108,17 +124,11 @@ std::ostream& operator<<(std::ostream& stream, const <#= typeVectorName #>& vect
 	return stream << VectorHelpers::ToString<#= vectorSize #>i(vector);
 }
 
-//TODO Fix for floating point types
-<#= typeVectorName #> Blend(const <#= typeVectorName #> comparision, const <#= typeVectorName #> falseValue, const <#= typeVectorName #> trueValue)
-{
-	return VectorHelpers::GetVector<#= vectorSize #>i<<#= typeName #>>(_<#= vectorSimdPrefix #>_blendv_epi8(VectorHelpers::GetInternal<#= vectorSize #>i(falseValue), VectorHelpers::GetInternal<#= vectorSize #>i(trueValue), VectorHelpers::GetInternal<#= vectorSize #>i(comparision)));
-}
-
 // Assignment Operators
 template <>
 <#= typeVectorName #>& <#= typeVectorName #>::operator+=(const <#= typeVectorName #>& rhs)
 {
-	this-><#= vectorVariableName #> = _<#= vectorSimdPrefix #>_add_epi<#= typeSize #>(this-><#= vectorVariableName #>, rhs.<#= vectorVariableName #>);
+	this-><#= vectorVariableName #> = _<#= vectorSimdPrefix #>_add_<#= typeSimdSuffix #>(this-><#= vectorVariableName #>, rhs.<#= vectorVariableName #>);
 	return *this;
 }
 
@@ -126,7 +136,7 @@ template <>
 template <>
 <#= typeVectorName #> <#= typeVectorName #>::operator>(const <#= typeVectorName #>& vector2) const
 {
-	return _<#= vectorSimdPrefix #>_cmpgt_epi<#= typeSize #>(this-><#= vectorVariableName #>, vector2.<#= vectorVariableName #>);
+	return _<#= vectorSimdPrefix #>_cmpgt_<#= typeSimdSuffix #>(this-><#= vectorVariableName #>, vector2.<#= vectorVariableName #>);
 }
 #pragma endregion
 

@@ -12,17 +12,22 @@ class Vector
 {
 	friend struct VectorHelpers;
 
-	__m128i vector_128_{};
-	__m256i vector_256_{};
+	__m64 vector_64_{};
+	//__m128i vector_128_{};
+	//__m256i vector_256_{};
 
 	//TODO Generate automatically?
-	Vector(__m128i vector) : vector_128_(vector)
+	Vector(__m64 vector) : vector_64_(vector)
+	{
+	}
+	
+	/*Vector(__m128i vector) : vector_128_(vector)
 	{
 	}
 
 	Vector(__m256i vector) : vector_256_(vector)
 	{
-	}
+	}*/
 
 public:
 	// Constructors
@@ -35,8 +40,6 @@ public:
 	{
 	}
 
-	Vector<T, X> static Blend(Vector<T, X> comparision, Vector<T, X> falseValue, Vector<T, X> trueValue);
-
 	// Assignment Operators
 	Vector<T, X>& operator+=(const Vector<T, X>& rhs);
 
@@ -45,36 +48,20 @@ public:
 };
 
 //TODO Move into struct?
-#pragma region Vector<int32_t, 128>
+#pragma region Vector<int8_t, 64>
 // Constructors
-template <> Vector<int32_t, 128>::Vector(int32_t value);
-template <> Vector<int32_t, 128>::Vector(std::array<int32_t, 4> values);
+template <> Vector<int8_t, 64>::Vector(int8_t value);
+template <> Vector<int8_t, 64>::Vector(std::array<int8_t, 8> values);
 
-std::ostream& operator<<(std::ostream& stream, const Vector<int32_t, 128>& vector);
+std::ostream& operator<<(std::ostream& stream, const Vector<int8_t, 64>& vector);
 
-Vector<int32_t, 128> Blend(Vector<int32_t, 128> comparision, Vector<int32_t, 128> falseValue, Vector<int32_t, 128> trueValue);
+//Vector<int8_t, 64> Blend(Vector<int8_t, 64> comparision, Vector<int8_t, 64> falseValue, Vector<int8_t, 64> trueValue);
 
 // Assignment Operators
-template <> Vector<int32_t, 128>& Vector<int32_t, 128>::operator+=(const Vector<int32_t, 128>& rhs);
+template <> Vector<int8_t, 64>& Vector<int8_t, 64>::operator+=(const Vector<int8_t, 64>& rhs);
 
 // Comparision Operators
-template <> Vector<int32_t, 128> Vector<int32_t, 128>::operator>(const Vector<int32_t, 128>& vector2) const;
-#pragma endregion
-
-#pragma region Vector<int32_t, 256>
-// Constructors
-template <> Vector<int32_t, 256>::Vector(int32_t value);
-template <> Vector<int32_t, 256>::Vector(std::array<int32_t, 8> values);
-
-std::ostream& operator<<(std::ostream& stream, const Vector<int32_t, 256>& vector);
-
-Vector<int32_t, 256> Blend(Vector<int32_t, 256> comparision, Vector<int32_t, 256> falseValue, Vector<int32_t, 256> trueValue);
-
-// Assignment Operators
-template <> Vector<int32_t, 256>& Vector<int32_t, 256>::operator+=(const Vector<int32_t, 256>& rhs);
-
-// Comparision Operators
-template <> Vector<int32_t, 256> Vector<int32_t, 256>::operator>(const Vector<int32_t, 256>& vector2) const;
+template <> Vector<int8_t, 64> Vector<int8_t, 64>::operator>(const Vector<int8_t, 64>& vector2) const;
 #pragma endregion
 
 #endif //VECTOR_H

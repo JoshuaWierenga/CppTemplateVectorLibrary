@@ -2,8 +2,8 @@
 <#@ output extension="" #>
 //TODO Merge string info arrays into a single structure
 //TODO Automate generation of typeVectorConstructorArguments
-<#	var typeSizes = new int[] {32}; 
-	var vectorSizes = new int[] {128, 256}; #>
+<#	var typeSizes = new int[] {8}; 
+	var vectorSizes = new int[] {64}; #>
 #ifndef VECTOR_H
 #define VECTOR_H
 #include <array>
@@ -16,17 +16,22 @@ class Vector
 {
 	friend struct VectorHelpers;
 
-	__m128i vector_128_{};
-	__m256i vector_256_{};
+	__m64 vector_64_{};
+	//__m128i vector_128_{};
+	//__m256i vector_256_{};
 
 	//TODO Generate automatically?
-	Vector(__m128i vector) : vector_128_(vector)
+	Vector(__m64 vector) : vector_64_(vector)
+	{
+	}
+	
+	/*Vector(__m128i vector) : vector_128_(vector)
 	{
 	}
 
 	Vector(__m256i vector) : vector_256_(vector)
 	{
-	}
+	}*/
 
 public:
 	// Constructors
@@ -38,8 +43,6 @@ public:
 	explicit Vector(T2... args) : Vector(std::array<T, sizeof...(T2)>{std::forward<T2>(args)...})
 	{
 	}
-
-	Vector<T, X> static Blend(Vector<T, X> comparision, Vector<T, X> falseValue, Vector<T, X> trueValue);
 
 	// Assignment Operators
 	Vector<T, X>& operator+=(const Vector<T, X>& rhs);
@@ -68,7 +71,7 @@ template <> <#= typeVectorName #>::Vector(std::array<<#= typeName#>, <#= vectorS
 
 std::ostream& operator<<(std::ostream& stream, const <#= typeVectorName #>& vector);
 
-<#= typeVectorName #> Blend(<#= typeVectorName #> comparision, <#= typeVectorName #> falseValue, <#= typeVectorName #> trueValue);
+//<#= typeVectorName #> Blend(<#= typeVectorName #> comparision, <#= typeVectorName #> falseValue, <#= typeVectorName #> trueValue);
 
 // Assignment Operators
 template <> <#= typeVectorName #>& <#= typeVectorName #>::operator+=(const <#= typeVectorName #>& rhs);
