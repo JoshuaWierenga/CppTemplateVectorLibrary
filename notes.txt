@@ -1,0 +1,5 @@
+TODO:
+move these todos to github issues
+move VectorHelpers.{h, cpp} into Vector.{h, cpp}
+automatically generate Vector.cpp using TextTransform.exe at build time
+improve error messages, somewhat already improved with last rewrite
